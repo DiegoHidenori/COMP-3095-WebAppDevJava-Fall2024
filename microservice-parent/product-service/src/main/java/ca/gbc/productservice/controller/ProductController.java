@@ -21,7 +21,7 @@ public class ProductController {
 
     // CREATE
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED) // Need a status code
+    @ResponseStatus(HttpStatus.CREATED) // 201
     public void createProduct(@RequestBody ProductRequest productRequest) {
         productService.createProduct(productRequest);
     }
@@ -29,7 +29,7 @@ public class ProductController {
 
     // READ
     @GetMapping
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.OK) // 200
     public List<ProductResponse> getAllProducts(){
         return productService.getAllProducts();
     }
@@ -37,7 +37,7 @@ public class ProductController {
 
     // UPDATE
     // http://localhost:8080/api/product/{primaryKey}
-    @PutMapping
+    @PutMapping("/{productId}")
 //    @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<?> updateProduct(@PathVariable("productId") String productId,
                                            @RequestBody ProductRequest productRequest) {
@@ -52,6 +52,7 @@ public class ProductController {
 
 
     // DELETE
+    @DeleteMapping("/{productId}")
     public ResponseEntity<?> deleteProduct(@PathVariable("productId") String productId) {
         productService.deleteProduct(productId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
