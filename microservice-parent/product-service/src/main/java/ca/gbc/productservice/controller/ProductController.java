@@ -6,6 +6,7 @@ import ca.gbc.productservice.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,15 +22,25 @@ public class ProductController {
 
     // CREATE
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED) // 201
-    public void createProduct(@RequestBody ProductRequest productRequest) {
-        productService.createProduct(productRequest);
+    @ResponseStatus(HttpStatus.CREATED) // If succeeds, status code 201
+    public ResponseEntity<ProductResponse> createProduct(@RequestBody ProductRequest productRequest) {
+
+        ProductResponse createdProduct = productService.createProduct(productRequest);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Location", "/api/product/" + createdProduct.id());
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .headers(headers)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(createdProduct);
     }
 
 
     // READ
     @GetMapping
-    @ResponseStatus(HttpStatus.OK) // 200
+    @ResponseStatus(HttpStatus.OK) // If succeeds, status code 200
     public List<ProductResponse> getAllProducts(){
         return productService.getAllProducts();
     }
@@ -37,7 +48,7 @@ public class ProductController {
 
     // UPDATE
     // http://localhost:8080/api/product/{primaryKey}
-    @PutMapping("/{productId}")
+    @PutMapping("/{productId}") // If succeeds, status code 204
 //    @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<?> updateProduct(@PathVariable("productId") String productId,
                                            @RequestBody ProductRequest productRequest) {
@@ -52,7 +63,7 @@ public class ProductController {
 
 
     // DELETE
-    @DeleteMapping("/{productId}")
+    @DeleteMapping("/{productId}") // If succeeds, status code 204
     public ResponseEntity<?> deleteProduct(@PathVariable("productId") String productId) {
         productService.deleteProduct(productId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
