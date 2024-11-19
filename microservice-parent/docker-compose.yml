@@ -20,49 +20,99 @@ version: '3.9'
 services:
 
 
-  # PRODUCT SERVICE ////////////////////
-  product-service:
-    image: product-service
+#  # PRODUCT SERVICE ////////////////////
+#  product-service:
+#    image: product-service
+#    ports:
+#      - "8081:8081"   # The internal port should match the exposed port in Dockerfile.
+#    build:
+#      context: ./product-service     # Docker compose will consider files within this directory.
+#      dockerfile: ./Dockerfile      # The exact path to the Dockerfile in the directory above.
+#    container_name: product-service   # Choose the name for the container.
+#    environment:
+#      SPRING_PROFILES_ACTIVE: docker  # This tells Spring Boot to use "application-docker.properties" profile.
+#    depends_on: # What will start before this service.
+#      - product-service-mongodb
+#    networks:
+#      - spring
+#
+#  product-service-mongodb:
+#    image: mongo
+#    container_name: product-service-mongodb
+#    ports:
+#      - "27018:27017"
+#    environment:
+#      - MONGO_INITDB_ROOT_USERNAME=admin
+#      - MONGO_INITDB_ROOT_PASSWORD=password
+#      - MONGO_INITDB_DATABASE=product-service
+#    volumes:
+#      - ./data/product:/data/db   # Persists data on host machine even if container restarts.
+#      - ./init/product/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js  # Initializes on first startup.
+#    #    command: mongod -auth
+#    networks:
+#      - spring
+#
+#  product-mongo-express:
+#    image: mongo-express
+#    container_name: product-service-express
+#    ports:
+#      - "8082:8082"
+#    environment:
+#      - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
+#      - ME_CONFIG_MONGODB_ADMINPASSWORD=password
+#      - ME_CONFIG_MONGODB_SERVER=product-service-mongodb
+#    depends_on:   # What will start before this service.
+#      - product-service-mongodb
+#    networks:
+#      - spring
+
+
+  # ORDER-SERVICE ///////////////////
+  order-service:
+    image: order-service
+    container_name: order-service   # Choose the name for the container.
     ports:
-      - "8081:8081"   # The internal port should match the exposed port in Dockerfile.
+      - "8086:8086"   # The internal port should match the exposed port in Dockerfile.
     build:
-      context: ./product-service     # Docker compose will consider files within this directory.
+      context: ./order-service     # Docker compose will consider files within this directory.
       dockerfile: ./Dockerfile      # The exact path to the Dockerfile in the directory above.
-    container_name: product-service   # Choose the name for the container.
     environment:
       SPRING_PROFILES_ACTIVE: docker  # This tells Spring Boot to use "application-docker.properties" profile.
-    depends_on: # What will start before this service.
-      - product-service-mongodb
+    depends_on:
+      order-service-postgres: # What will start before this service.
+        condition: service_healthy
     networks:
       - spring
 
-  product-service-mongodb:
-    image: mongo
-    container_name: product-service-mongodb
+  order-service-postgres:
+    image: postgres
+    container_name: order-service-postgres
     ports:
-      - "27018:27017"
+      - "5433:5432"
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=admin
-      - MONGO_INITDB_ROOT_PASSWORD=password
-      - MONGO_INITDB_DATABASE=product-service
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=password
+    #      - POSTGRES_DB=room-service
     volumes:
-      - ./data/product:/data/db   # Persists data on host machine even if container restarts.
-      - ./init/product/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js  # Initializes on first startup.
-    #    command: mongod -auth
+      - ./data/order:/var/lib/postgresql/data
+      - ./init/order/init.sql:/docker-entrypoint-initdb.d/init.sql # Executes at initialization.
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U admin" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - spring
 
-  product-mongo-express:
-    image: mongo-express
-    container_name: product-service-express
+  order-service-pgadmin:
+    image: dpage/pgadmin4
+    container_name: order-service-pgadmin4
     ports:
-      - "8082:8082"
+      - "8888:80"
     environment:
-      - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
-      - ME_CONFIG_MONGODB_ADMINPASSWORD=password
-      - ME_CONFIG_MONGODB_SERVER=product-service-mongodb
-    depends_on:   # What will start before this service.
-      - product-service-mongodb
+      - PGADMIN_DEFAULT_EMAIL=user@domain.ca
+      - PGADMIN_DEFAULT_PASSWORD=password
+
     networks:
       - spring
 
@@ -109,55 +159,6 @@ services:
 #      - ME_CONFIG_MONGODB_SERVER=event-service-mongodb
 #    depends_on: # What will start before this service.
 #      - event-service-mongodb
-#    networks:
-#      - spring
-#
-#  # ROOM-SERVICE ///////////////////
-#  room-service:
-#    image: room-service
-#    container_name: room-service   # Choose the name for the container.
-#    ports:
-#      - "8086:8086"   # The internal port should match the exposed port in Dockerfile.
-#    build:
-#      context: ./RoomService     # Docker compose will consider files within this directory.
-#      dockerfile: ./Dockerfile      # The exact path to the Dockerfile in the directory above.
-#    environment:
-#      SPRING_PROFILES_ACTIVE: docker  # This tells Spring Boot to use "application-docker.properties" profile.
-#    depends_on:
-#      room-service-postgres:   # What will start before this service.
-#        condition: service_healthy
-#    networks:
-#      - spring
-#
-#  room-service-postgres:
-#    image: postgres
-#    container_name: room-service-postgres
-#    ports:
-#      - "5433:5432"
-#    environment:
-#      - POSTGRES_USER=admin
-#      - POSTGRES_PASSWORD=password
-#    #      - POSTGRES_DB=room-service
-#    volumes:
-#      - ./data/room:/var/lib/postgresql/data
-#      - ./init/room/init.sql:/docker-entrypoint-initdb.d/init.sql # Executes at initialization.
-#    healthcheck:
-#      test: [ "CMD-SHELL", "pg_isready -U admin" ]
-#      interval: 10s
-#      timeout: 5s
-#      retries: 5
-#    networks:
-#      - spring
-#
-#  room-service-pgadmin:
-#    image: dpage/pgadmin4
-#    container_name: room-service-pgadmin4
-#    ports:
-#      - "8888:80"
-#    environment:
-#      - PGADMIN_DEFAULT_EMAIL=user@domain.ca
-#      - PGADMIN_DEFAULT_PASSWORD=password
-#
 #    networks:
 #      - spring
 #
