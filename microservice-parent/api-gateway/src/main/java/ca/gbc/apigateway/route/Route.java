@@ -21,6 +21,9 @@ public class Route {
     @Value("${order.service.url}")
     private String orderServiceUrl;
 
+    @Value("${inventory.service.url}")
+    private String inventoryServiceUrl;
+
     @Bean
     public RouterFunction<ServerResponse> productServiceRoute() {
 
@@ -60,6 +63,29 @@ public class Route {
                     } catch (Exception e) {
                         log.error("Error occurred while routing to: {}", e.getMessage(), e);
                         return ServerResponse.status(500).body("Error occurred when routing to order-service");
+                    }
+
+                })
+                .build();
+
+    }
+
+    @Bean
+    public RouterFunction<ServerResponse> inventoryServiceRoute() {
+
+        log.info("Initializing inventory service route with URL: {}", inventoryServiceUrl);
+        return GatewayRouterFunctions.route("inventory_service")
+                .route(RequestPredicates.path("/api/inventory"), request -> {
+
+                    log.info("Request received for inventory-service: {}", request.uri());
+
+                    try{
+                        ServerResponse response = HandlerFunctions.http(inventoryServiceUrl).handle(request);
+                        log.info("Response status: {}", response.statusCode());
+                        return response;
+                    } catch (Exception e) {
+                        log.error("Error occurred while routing to: {}", e.getMessage(), e);
+                        return ServerResponse.status(500).body("Error occurred when routing to inventory-service");
                     }
 
                 })

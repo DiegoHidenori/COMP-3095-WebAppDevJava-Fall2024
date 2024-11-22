@@ -1,0 +1,76 @@
+# ---------------------------------------------------------------------------------------------------------------------
+# KEYCLOAK CREATION
+
+# This command starts the containers in detached mode without rebuilding the images if they already exist
+# docker-compose -p keycloak-containers -f docker-compose-local.yml up -d
+
+# This command rebuilds images even if they exist
+# RUN THIS IF CHANGES WERE ONLY DONE IN THIS FILE. UPDATES CONTAINERS WITH NEW CONFIGURATIONS AND KEEPS DATA/VOLUMES
+# docker-compose -p keycloak-containers -f docker-compose-local.yml up -d --build
+
+# This command stops and removes containers and volumes
+# docker-compose -p keycloak-containers -f docker-compose-local.yml down -v
+
+# DOCKER-COMPOSE FILE IS MEANT TO BE RUN ONCE
+
+# ---------------------------------------------------------------------------------------------------------------------
+
+
+version: '3.9'
+
+services:
+
+  keycloak:
+    container_name: keycloak
+    ports:
+      - "8088:8080"
+    hostname: keycloak
+    image: quay.io/keycloak/keycloak:24.0.1
+    command: ["start-dev", "--import-realm"]
+    environment:
+      DB_VENDOR: postgres
+      DB_ADDR: keycloak-postgres
+      DB_DATABASE: keycloak
+      DB_USER: admin
+      DB_PASSWORD: password
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: password
+      ROOT_LOGLEVEL: DEBUG
+      JBOSS_LOG_MANAGER_ROOT_LOGGER: DEBUG, stdout, FILE
+    volumes:
+      - ./realms/:/opt/keycloak/data/import
+    depends_on:
+      - keycloak-postgres
+    networks:
+      - spring
+
+  keycloak-postgres:
+    image: postgres
+    container_name: keycloak-postgres
+    ports:
+      - "5435:5432"
+    environment:
+      - POSTGRES_DB=keycloak
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=password
+      - PGDATA=/data
+    volumes:
+      - ./data/keycloak:/var/lib/postgresql/data
+    networks:
+      - spring
+
+#  keycloak-pgadmin:
+#    image: dpage/pgadmin4
+#    container_name: keycloak-pgadmin4
+#    ports:
+#      - "8889:80"
+#    environment:
+#      - PGADMIN_DEFAULT_EMAIL=user@domain.ca
+#      - PGADMIN_DEFAULT_PASSWORD=password
+#
+#    networks:
+#      - spring
+
+networks:
+  spring:
+    driver: bridge

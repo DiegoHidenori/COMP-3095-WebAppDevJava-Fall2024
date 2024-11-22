@@ -5,6 +5,7 @@
 # docker-compose -p comp-3095-ice -f docker-compose.yml up -d
 
 # This command rebuilds images even if they exist
+# RUN THIS IF CHANGES WERE ONLY DONE IN THIS FILE. UPDATES CONTAINERS WITH NEW CONFIGURATIONS AND KEEPS DATA/VOLUMES
 # docker-compose -p comp-3095-ice -f docker-compose.yml up -d --build
 
 # This command stops and removes containers and volumes
@@ -72,7 +73,7 @@ services:
     image: order-service
     container_name: order-service   # Choose the name for the container.
     ports:
-      - "8086:8086"   # The internal port should match the exposed port in Dockerfile.
+      - "8083:8083"   # The internal port should match the exposed port in Dockerfile.
     build:
       context: ./order-service     # Docker compose will consider files within this directory.
       dockerfile: ./Dockerfile      # The exact path to the Dockerfile in the directory above.
@@ -122,7 +123,7 @@ services:
     image: inventory-service
     container_name: inventory-service   # Choose the name for the container.
     ports:
-      - "8087:8087"   # The internal port should match the exposed port in Dockerfile.
+      - "8084:8084"   # The internal port should match the exposed port in Dockerfile.
     build:
       context: ./inventory-service     # Docker compose will consider files within this directory.
       dockerfile: ./Dockerfile      # The exact path to the Dockerfile in the directory above.
@@ -166,105 +167,6 @@ services:
     networks:
       - spring
 
-
-
-
-#  # EVENT-SERVICE //////////////////
-#  event-service:
-#    image: event-service
-#    ports:
-#      - "8088:8088"   # The internal port should match the exposed port in Dockerfile.
-#    build:
-#      context: ./EventService     # Docker compose will consider files within this directory.
-#      dockerfile: ./Dockerfile      # The exact path to the Dockerfile in the directory above.
-#    container_name: event-service   # Choose the name for the container.
-#    environment:
-#      SPRING_PROFILES_ACTIVE: docker  # This tells Spring Boot to use "application-docker.properties" profile.
-#    depends_on: # What will start before this service.
-#      - event-service-mongodb
-#    networks:
-#      - spring
-#
-#  event-service-mongodb:
-#    image: mongo
-#    container_name: event-service-mongodb
-#    ports:
-#      - "27019:27017"
-#    environment:
-#      - MONGO_INITDB_ROOT_USERNAME=admin
-#      - MONGO_INITDB_ROOT_PASSWORD=password
-#      - MONGO_INITDB_DATABASE=event-service
-#    volumes:
-#      - ./data/event:/data/db   # Persists data on host machine even if container restarts.
-#      - ./init/event/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js  # Initializes on first startup.
-#    #    command: mongod -auth
-#    networks:
-#      - spring
-#
-#  event-mongo-express:
-#    image: mongo-express
-#    container_name: event-service-express
-#    ports:
-#      - "8082:8082"
-#    environment:
-#      - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
-#      - ME_CONFIG_MONGODB_ADMINPASSWORD=password
-#      - ME_CONFIG_MONGODB_SERVER=event-service-mongodb
-#    depends_on: # What will start before this service.
-#      - event-service-mongodb
-#    networks:
-#      - spring
-#
-#
-#  # USER-SERVICE /////////////////////////
-#  user-service:
-#    image: user-service
-#    container_name: user-service   # Choose the name for the container.
-#    ports:
-#      - "8087:8087"   # The internal port should match the exposed port in Dockerfile.
-#    build:
-#      context: ./UserService     # Docker compose will consider files within this directory.
-#      dockerfile: ./Dockerfile      # The exact path to the Dockerfile in the directory above.
-#    environment:
-#      SPRING_PROFILES_ACTIVE: docker  # This tells Spring Boot to use "application-docker.properties" profile.
-#    depends_on:
-#      user-service-postgres:
-#        condition: service_healthy
-#    #      - room-service-postgres   # What will start before this service.
-#    networks:
-#      - spring
-#
-#  user-service-postgres:
-#    image: postgres
-#    container_name: user-service-postgres
-#    ports:
-#      - "5434:5432"
-#    environment:
-#      - POSTGRES_USER=admin
-#      - POSTGRES_PASSWORD=password
-#    #      - POSTGRES_DB=room-service
-#    volumes:
-#      - ./data/user:/var/lib/postgresql/data
-#      - ./init/user/init.sql:/docker-entrypoint-initdb.d/init.sql # Executes at initialization.
-#    healthcheck:
-#      test: [ "CMD-SHELL", "pg_isready -U admin" ]
-#      interval: 10s
-#      timeout: 5s
-#      retries: 5
-#    networks:
-#      - spring
-#
-#  user-service-pgadmin:
-#    image: dpage/pgadmin4
-#    container_name: user-service-pgadmin4
-#    ports:
-#      - "8889:80"
-#    environment:
-#      - PGADMIN_DEFAULT_EMAIL=user@domain.ca
-#      - PGADMIN_DEFAULT_PASSWORD=password
-#
-#    networks:
-#      - spring
 
 # Optional for persisting data
 #volumes:

@@ -1,0 +1,64 @@
+# ---------------------------------------------------------------------------------------------------------------------
+# ORDER MICROSERVICES CREATION
+
+# This command starts the containers in detached mode without rebuilding the images if they already exist
+# docker-compose -p order-service-single -f docker-compose-single.yml up -d
+
+# This command rebuilds images even if they exist
+# RUN THIS IF CHANGES WERE ONLY DONE IN THIS FILE. UPDATES CONTAINERS WITH NEW CONFIGURATIONS AND KEEPS DATA/VOLUMES
+# docker-compose -p order-service-single -f docker-compose-single.yml up -d --build
+
+# This command stops and removes containers and volumes
+# docker-compose -p order-service-single -f docker-compose-single.yml down -v
+
+# DOCKER-COMPOSE FILE IS MEANT TO BE RUN ONCE
+
+# ---------------------------------------------------------------------------------------------------------------------
+
+
+version: '3.9'
+
+services:
+
+  order-service-postgres:
+    image: postgres
+    container_name: order-service-postgres
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=password
+    #      - POSTGRES_DB=order-service
+    volumes:
+      - ./data/order:/var/lib/postgresql/data
+      - ./init/order/init.sql:/docker-entrypoint-initdb.d/init.sql # Executes at initialization.
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U admin" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - spring
+
+  order-service-pgadmin:
+    image: dpage/pgadmin4
+    container_name: order-service-pgadmin4
+    ports:
+      - "8888:80"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=user@domain.ca
+      - PGADMIN_DEFAULT_PASSWORD=password
+
+    networks:
+      - spring
+
+
+# Optional for persisting data
+#volumes:
+#  mongo-db:
+#    driver: local
+
+
+networks:
+  spring:
+    driver: bridge
