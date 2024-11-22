@@ -92,7 +92,7 @@ services:
     environment:
       - POSTGRES_USER=admin
       - POSTGRES_PASSWORD=password
-    #      - POSTGRES_DB=room-service
+    #      - POSTGRES_DB=order-service
     volumes:
       - ./data/order:/var/lib/postgresql/data
       - ./init/order/init.sql:/docker-entrypoint-initdb.d/init.sql # Executes at initialization.
@@ -115,6 +115,59 @@ services:
 
     networks:
       - spring
+
+
+# INVENTORY-SERVICE /////////////////
+  inventory-service:
+    image: inventory-service
+    container_name: inventory-service   # Choose the name for the container.
+    ports:
+      - "8087:8087"   # The internal port should match the exposed port in Dockerfile.
+    build:
+      context: ./inventory-service     # Docker compose will consider files within this directory.
+      dockerfile: ./Dockerfile      # The exact path to the Dockerfile in the directory above.
+    environment:
+      SPRING_PROFILES_ACTIVE: docker  # This tells Spring Boot to use "application-docker.properties" profile.
+    depends_on:
+      inventory-service-postgres: # What will start before this service.
+        condition: service_healthy
+    networks:
+      - spring
+
+  inventory-service-postgres:
+    image: postgres
+    container_name: inventory-service-postgres
+    ports:
+      - "5434:5432"
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=password
+    #      - POSTGRES_DB=inventory-service
+    volumes:
+      - ./data/inventory:/var/lib/postgresql/data
+      - ./init/inventory/init.sql:/docker-entrypoint-initdb.d/init.sql # Executes at initialization.
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U admin" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - spring
+
+  inventory-service-pgadmin:
+    image: dpage/pgadmin4
+    container_name: inventory-service-pgadmin4
+    ports:
+      - "8889:80"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=user@domain.ca
+      - PGADMIN_DEFAULT_PASSWORD=password
+
+    networks:
+      - spring
+
+
+
 
 #  # EVENT-SERVICE //////////////////
 #  event-service:
