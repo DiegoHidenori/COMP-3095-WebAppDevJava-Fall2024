@@ -16,6 +16,16 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    private final String[] noAuthResourceUri = {
+            "/swagger-ui",
+            "/swagger-ui/*",
+            "/v3/api-docs/**",
+            "/swagger-resource/**",
+            "/api-docs/**",
+            "/aggregate/**"
+
+    };
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
 
@@ -25,6 +35,7 @@ public class SecurityConfig {
 //                .authorizeHttpRequests(authorize -> authorize
 //                        .anyRequest().permitAll())  // All requests temporarily permitted
                 .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers(noAuthResourceUri).permitAll()
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(Customizer.withDefaults()))

@@ -21,51 +21,51 @@ version: '3.9'
 services:
 
 
-#  # PRODUCT SERVICE ////////////////////
-#  product-service:
-#    image: product-service
-#    ports:
-#      - "8081:8081"   # The internal port should match the exposed port in Dockerfile.
-#    build:
-#      context: ./product-service     # Docker compose will consider files within this directory.
-#      dockerfile: ./Dockerfile      # The exact path to the Dockerfile in the directory above.
-#    container_name: product-service   # Choose the name for the container.
-#    environment:
-#      SPRING_PROFILES_ACTIVE: docker  # This tells Spring Boot to use "application-docker.properties" profile.
-#    depends_on: # What will start before this service.
-#      - product-service-mongodb
-#    networks:
-#      - spring
-#
-#  product-service-mongodb:
-#    image: mongo
-#    container_name: product-service-mongodb
-#    ports:
-#      - "27018:27017"
-#    environment:
-#      - MONGO_INITDB_ROOT_USERNAME=admin
-#      - MONGO_INITDB_ROOT_PASSWORD=password
-#      - MONGO_INITDB_DATABASE=product-service
-#    volumes:
-#      - ./data/product:/data/db   # Persists data on host machine even if container restarts.
-#      - ./init/product/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js  # Initializes on first startup.
-#    #    command: mongod -auth
-#    networks:
-#      - spring
-#
-#  product-mongo-express:
-#    image: mongo-express
-#    container_name: product-service-express
-#    ports:
-#      - "8082:8082"
-#    environment:
-#      - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
-#      - ME_CONFIG_MONGODB_ADMINPASSWORD=password
-#      - ME_CONFIG_MONGODB_SERVER=product-service-mongodb
-#    depends_on:   # What will start before this service.
-#      - product-service-mongodb
-#    networks:
-#      - spring
+  # PRODUCT SERVICE ////////////////////
+  product-service:
+    image: product-service
+    ports:
+      - "8081:8081"   # The internal port should match the exposed port in Dockerfile.
+    build:
+      context: ./product-service     # Docker compose will consider files within this directory.
+      dockerfile: ./Dockerfile      # The exact path to the Dockerfile in the directory above.
+    container_name: product-service   # Choose the name for the container.
+    environment:
+      SPRING_PROFILES_ACTIVE: docker  # This tells Spring Boot to use "application-docker.properties" profile.
+    depends_on: # What will start before this service.
+      - product-service-mongodb
+    networks:
+      - spring
+
+  product-service-mongodb:
+    image: mongo
+    container_name: product-service-mongodb
+    ports:
+      - "27018:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+      - MONGO_INITDB_DATABASE=product-service
+    volumes:
+      - ./data/product:/data/db   # Persists data on host machine even if container restarts.
+      - ./init/product/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js  # Initializes on first startup.
+    #    command: mongod -auth
+    networks:
+      - spring
+
+  product-mongo-express:
+    image: mongo-express
+    container_name: product-service-express
+    ports:
+      - "8082:8082"
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=password
+      - ME_CONFIG_MONGODB_SERVER=product-service-mongodb
+    depends_on:   # What will start before this service.
+      - product-service-mongodb
+    networks:
+      - spring
 
 
   # ORDER-SERVICE ///////////////////
@@ -164,6 +164,72 @@ services:
       - PGADMIN_DEFAULT_EMAIL=user@domain.ca
       - PGADMIN_DEFAULT_PASSWORD=password
 
+    networks:
+      - spring
+
+
+  # KEYCLOAK //////////
+  keycloak:
+    container_name: keycloak
+    ports:
+      - "8080:8080"
+    hostname: keycloak
+    image: quay.io/keycloak/keycloak:24.0.1
+    command: [ "start-dev", "--import-realm" ]
+    environment:
+      DB_VENDOR: postgres
+      DB_ADDR: keycloak-postgres
+      DB_DATABASE: keycloak
+      DB_USER: admin
+      DB_PASSWORD: password
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: password
+      ROOT_LOGLEVEL: DEBUG
+      JBOSS_LOG_MANAGER_ROOT_LOGGER: DEBUG, stdout, FILE
+#      KEYCLOAK_FRONTEND_URL: http://keycloak:8080
+    volumes:
+      - ./realms/:/opt/keycloak/data/import
+    depends_on:
+      keycloak-postgres:
+        condition: service_healthy
+    networks:
+      - spring
+
+  keycloak-postgres:
+    image: postgres
+    container_name: keycloak-postgres
+    ports:
+      - "5435:5432"
+    environment:
+      - POSTGRES_DB=keycloak
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=password
+      - PGDATA=/data
+    volumes:
+      - ./data/keycloak:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U admin" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - spring
+
+
+  # API-GATEWAY
+  api-gateway:
+    image: api-gateway
+    container_name: api-gateway
+    ports:
+      - "9000:9000"
+    build:
+      context: ./api-gateway     # Docker compose will consider files within this directory.
+      dockerfile: ./Dockerfile      # The exact path to the Dockerfile in the directory above.
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      - keycloak
+      - keycloak-postgres
     networks:
       - spring
 

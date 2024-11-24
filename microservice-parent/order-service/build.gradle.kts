@@ -39,9 +39,12 @@ dependencies {
 
 
 	// Week 10
-	implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
+//	implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
 	implementation("org.springframework.cloud:spring-cloud-starter-contract-stub-runner")
 
+
+	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
+	testImplementation("org.springdoc:springdoc-openapi-starter-webmvc-api:2.6.0")
 	compileOnly("org.projectlombok:lombok")
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 	runtimeOnly("org.postgresql:postgresql")
@@ -50,6 +53,9 @@ dependencies {
 	testImplementation("org.springframework.boot:spring-boot-testcontainers")
 	testImplementation("org.testcontainers:junit-jupiter")
 	testImplementation("org.testcontainers:postgresql")
+	testImplementation("io.rest-assured:rest-assured")
+	testImplementation("org.mockito:mockito-core:5.6.0")
+	testImplementation("org.mockito:mockito-junit-jupiter:5.6.0")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
