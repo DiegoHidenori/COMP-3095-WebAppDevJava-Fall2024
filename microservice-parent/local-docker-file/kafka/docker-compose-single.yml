@@ -1,0 +1,80 @@
+# ---------------------------------------------------------------------------------------------------------------------
+# KAFKA CREATION
+
+# This command starts the containers in detached mode without rebuilding the images if they already exist
+# docker-compose -p kafka-ice -f docker-compose-single.yml up -d
+
+# This command rebuilds images even if they exist
+# RUN THIS IF CHANGES WERE ONLY DONE IN THIS FILE. UPDATES CONTAINERS WITH NEW CONFIGURATIONS AND KEEPS DATA/VOLUMES
+# docker-compose -p kafka-ice -f docker-compose-single.yml up -d --build
+
+# This command stops and removes containers and volumes
+# docker-compose -p kafka-ice -f docker-compose-single.yml down -v
+
+# ---------------------------------------------------------------------------------------------------------------------
+
+services:
+
+  zookeeper:
+    container_name: zookeeper-ice
+    hostname: zookeeper
+    image: confluentinc/cp-zookeeper:7.5.0
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - spring
+
+  broker:
+    container_name: broker-ice
+    image: confluentinc/cp-kafka:7.5.0
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT, PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092, PLAINTEXT_HOST://host.docker.internal:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    depends_on:
+      - zookeeper
+    networks:
+      - spring
+
+  kafka-ui:
+    container_name: kafka-ui-ice
+    image: provectuslabs/kafka-ui
+    ports:
+      - "8089:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAP_SERVERS: broker:29092
+      KAFKA_CLUSTERS_0_SCHEMA_REGISTRY: http://schema-registry:8091
+      DYNAMIC_CONFIG_ENABLED: 'true'
+    networks:
+      - spring
+
+
+  schema-registry:
+    container_name: schema-registry-ice
+    image: confluentinc/cp-schema-registry:7.5.0
+    hostname: schema-registry
+    depends_on:
+      - broker
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'broker:29092'
+      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8091
+    ports:
+        - "8091:8091"
+    networks:
+      - spring
+
+
+
+networks:
+  spring:
+    driver: bridge

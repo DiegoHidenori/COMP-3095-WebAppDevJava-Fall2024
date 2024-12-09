@@ -22,7 +22,7 @@ services:
 
   inventory-service-postgres:
     image: postgres
-    container_name: inventory-service-postgres
+    container_name: inventory-service-postgre-single
     ports:
       - "5434:5432"
     environment:
@@ -42,7 +42,7 @@ services:
 
   inventory-service-pgadmin:
     image: dpage/pgadmin4
-    container_name: inventory-service-pgadmin4
+    container_name: inventory-service-pgadmin4-single
     ports:
       - "8889:80"
     environment:

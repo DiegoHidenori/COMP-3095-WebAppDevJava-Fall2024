@@ -31,7 +31,7 @@ public class Route {
 
         log.info("Initializing product service route with URL: {}", productServiceUrl);
         return GatewayRouterFunctions.route("product_service")
-                .route(RequestPredicates.path("/api/product"), request -> {
+                .route(RequestPredicates.path("/api/product/**"), request -> {
 
                     log.info("Request received for product-service: {}", request.uri());
 
@@ -54,7 +54,7 @@ public class Route {
 
         log.info("Initializing order service route with URL: {}", orderServiceUrl);
         return GatewayRouterFunctions.route("order_service")
-                .route(RequestPredicates.path("/api/order"), request -> {
+                .route(RequestPredicates.path("/api/order/**"), request -> {
 
                     log.info("Request received for order-service: {}", request.uri());
 
@@ -77,7 +77,7 @@ public class Route {
 
         log.info("Initializing inventory service route with URL: {}", inventoryServiceUrl);
         return GatewayRouterFunctions.route("inventory_service")
-                .route(RequestPredicates.path("/api/inventory"), request -> {
+                .route(RequestPredicates.path("/api/inventory/**"), request -> {
 
                     log.info("Request received for inventory-service: {}", request.uri());
 

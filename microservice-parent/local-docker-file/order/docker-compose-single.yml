@@ -22,7 +22,7 @@ services:
 
   order-service-postgres:
     image: postgres
-    container_name: order-service-postgres
+    container_name: order-service-postgres-single
     ports:
       - "5433:5432"
     environment:
@@ -42,7 +42,7 @@ services:
 
   order-service-pgadmin:
     image: dpage/pgadmin4
-    container_name: order-service-pgadmin4
+    container_name: order-service-pgadmin4-single
     ports:
       - "8888:80"
     environment:
