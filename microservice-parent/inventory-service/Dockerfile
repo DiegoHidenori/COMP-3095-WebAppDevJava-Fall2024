@@ -23,6 +23,6 @@ COPY --from=builder /home/gradle/src/build/libs/*.jar /app/inventory-service.jar
 ENV POSTGRES_USER=admin \
     POSTGRES_PASSWORD=password
 
-EXPOSE 8086
+EXPOSE 8084
 
 ENTRYPOINT ["java", "-jar", "/app/inventory-service.jar"]

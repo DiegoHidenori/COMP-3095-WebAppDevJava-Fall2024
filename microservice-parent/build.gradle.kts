@@ -23,6 +23,10 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
+subprojects {
+    apply(plugin = "java")
+}
+
 tasks.withType<Test> {
     useJUnitPlatform()
 }

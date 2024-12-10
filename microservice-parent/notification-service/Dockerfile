@@ -18,14 +18,8 @@ FROM openjdk:22-jdk
 
 RUN mkdir /app
 
-COPY --from=builder /home/gradle/src/build/libs/*.jar /app/product-service.jar
+COPY --from=builder /home/gradle/src/build/libs/*.jar /app/notification-service.jar
 
-ENV MONGO_DB_USERNAME=admin \
-    MONGO_DB_PWD=password
+EXPOSE 8090
 
-
-# Opens port in the container, making the app accessible on this port inside the Docker network.
-# Match the internal port shown on "docker-compose.yml".
-EXPOSE 8081
-
-ENTRYPOINT ["java", "-jar", "/app/product-service.jar"]
+ENTRYPOINT ["java", "-jar", "/app/notification-service.jar"]

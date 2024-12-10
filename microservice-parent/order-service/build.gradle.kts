@@ -45,6 +45,8 @@ dependencies {
 //	implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
 	implementation("org.springframework.cloud:spring-cloud-starter-contract-stub-runner")
 
+	implementation("org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j:3.1.2")
+
 	implementation("org.springframework.kafka:spring-kafka:3.3.0")
 	testImplementation("org.springframework.kafka:spring-kafka-test:3.3.0")
 	testImplementation("org.testcontainers:kafka:1.20.4")
@@ -70,6 +72,14 @@ dependencies {
 	testImplementation("org.mockito:mockito-junit-jupiter:5.6.0")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
+
+//tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
+//	archiveFileName.set("${project.name}.jar")
+//}
+//
+//tasks.named<Jar>("jar") {
+//	enabled = false // Ensures the `bootJar` task takes precedence
+//}
 
 tasks.withType<Test> {
 	useJUnitPlatform()

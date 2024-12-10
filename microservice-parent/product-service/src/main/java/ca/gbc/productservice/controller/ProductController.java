@@ -42,7 +42,15 @@ public class ProductController {
     @GetMapping
     @ResponseStatus(HttpStatus.OK) // If succeeds, status code 200
     public List<ProductResponse> getAllProducts(){
+
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
         return productService.getAllProducts();
+
     }
 
 

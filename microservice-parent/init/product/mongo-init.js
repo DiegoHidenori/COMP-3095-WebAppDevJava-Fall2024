@@ -9,6 +9,6 @@ db.createUser(
     }
 );
 
-db.createCollection('user');
+// db.createCollection('user');
 
 print('END OF MONGO-INIT.JS');

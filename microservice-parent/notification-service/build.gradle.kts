@@ -45,11 +45,20 @@ dependencies {
 	implementation("io.confluent:kafka-avro-serializer:7.5.0")
 	implementation("io.confluent:kafka-schema-registry-client:7.7.1")
 	implementation(project(":shared-schema"))
+	testImplementation("org.testcontainers:testcontainers:1.19.0")
 
 	testImplementation("org.testcontainers:junit-jupiter")
 	testImplementation("org.testcontainers:kafka")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
+
+//tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
+//	archiveFileName.set("${project.name}.jar")
+//}
+//
+//tasks.named<Jar>("jar") {
+//	enabled = false // Ensures the `bootJar` task takes precedence
+//}
 
 tasks.withType<Test> {
 	useJUnitPlatform()
